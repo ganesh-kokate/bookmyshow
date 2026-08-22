@@ -18,7 +18,7 @@ public class BookingController {
     @PostMapping("/bookseats")
     public String book(@RequestBody BookingRequest bookingRequest)
     {
-       return bookingservice.createBooking();
+       return bookingservice.createBooking(bookingRequest);
     }
 
     @PostMapping("/cofirm")

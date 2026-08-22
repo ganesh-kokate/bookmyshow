@@ -1,6 +1,8 @@
 package com.bookmyshow.seat.controler;
 
+import com.bookmyshow.seat.model.request.ConfirmRequest;
 import com.bookmyshow.seat.model.request.LockSeatsRequest;
+import com.bookmyshow.seat.model.response.ConfirmSeatResponse;
 import com.bookmyshow.seat.model.response.LockSeatsResponse;
 import com.bookmyshow.seat.service.SeatService;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,15 @@ public class SeatControler {
     {
 
         log.info("Acqiring lock on seat ids {}", lockSeatsRequest.getSeatIds());
-        return seatService.lockSeats(lockSeatsRequest);
+        return seatService.lockSeats(lockSeatsRequest.getSeatIds());
+    }
+
+
+    @PostMapping("/confirm-seats")
+    public ConfirmSeatResponse confirmSeats(@RequestBody ConfirmRequest confirmRequest)
+    {
+
+        log.info("Booking on seat ids {}", confirmRequest.getSeatIds());
+        return seatService.bookSeats(confirmRequest);
     }
 }

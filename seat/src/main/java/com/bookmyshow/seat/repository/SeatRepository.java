@@ -16,7 +16,8 @@ import java.util.List;
 @Repository
 public interface SeatRepository extends JpaRepository<Seat, String> {
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    // Replace PESSIMISTIC locking to Redis
+//    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM Seat s WHERE s.seatId IN :ids")
     List<Seat> findSeatsForBooking(@Param("ids") List<String> ids);
 
