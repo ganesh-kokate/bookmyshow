@@ -10,4 +10,6 @@ public class LockSeatsRequest {
 
     @NotNull
     private List<String> seatIds;
+
+    private String showId;
 }

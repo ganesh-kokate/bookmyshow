@@ -1,9 +1,8 @@
 package com.bookmyshow.common.models;
 
+import com.bookmyshow.common.enums.SeatType;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "seat")
@@ -15,20 +14,18 @@ import java.time.LocalDateTime;
 public class Seat {
 
     @Id
-    @Column(name = "seat_id",length = 50)
+    @Column(name = "seat_id", length = 50)
     private String seatId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private SeatStatus status;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "locked_by")
-    private Booking booking;
+    @JoinColumns({
+            @JoinColumn(name = "theotorid", referencedColumnName = "theotorid"),
+            @JoinColumn(name = "screen_name", referencedColumnName = "screen_name")
+    })
+    private Screen screen;
 
-    @Column(name = "locked_at")
-    private LocalDateTime lockedAt;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "seattype")
+    private SeatType type;
 
-    @Version
-    private Long version;
 }

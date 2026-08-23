@@ -12,9 +12,9 @@ public class SeatLockService {
     private final RedisTemplate<String, String> redisTemplate;
     private static final long LOCK_DURATION = 10;
 
-    public boolean tryLock(String seatId, String lockToken) {
+    public boolean tryLock(String seatId,String showId, String lockToken) {
 
-        String key = "seat-lock:" + seatId;
+        String key = "seat-lock:" + seatId + "-showid" + showId.toLowerCase();
 
         Boolean acquired = redisTemplate.opsForValue()
                            .setIfAbsent(key, lockToken, Duration.ofMinutes(LOCK_DURATION));
@@ -22,9 +22,9 @@ public class SeatLockService {
         return Boolean.TRUE.equals(acquired);
     }
 
-    public void releaseLock(String seatId, String lockToken) {
+    public void releaseLock(String seatId,String showId, String lockToken) {
 
-        String key = "seat-lock:" + seatId;
+        String key = "seat-lock:" + seatId + "-showid" + showId.toLowerCase();
 
         String currentToken = redisTemplate.opsForValue().get(key);
 

@@ -32,15 +32,15 @@ public class SeatControler {
     {
 
         log.info("Acqiring lock on seat ids {}", lockSeatsRequest.getSeatIds());
-        return seatService.lockSeats(lockSeatsRequest.getSeatIds());
+        return seatService.lockSeats(lockSeatsRequest);
     }
 
 
-    @PostMapping("/confirm-seats")
-    public ConfirmSeatResponse confirmSeats(@RequestBody ConfirmRequest confirmRequest)
-    {
-
-        log.info("Booking on seat ids {}", confirmRequest.getSeatIds());
-        return seatService.bookSeats(confirmRequest);
-    }
+//    @PostMapping("/confirm-seats")
+//    public ConfirmSeatResponse confirmSeats(@RequestBody ConfirmRequest confirmRequest)
+//    {
+//
+//        log.info("Booking on seat ids {}", confirmRequest.getSeatIds());
+//        return seatService.bookSeats(confirmRequest);
+//    }
 }

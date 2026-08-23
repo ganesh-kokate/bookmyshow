@@ -3,20 +3,16 @@ package com.bookmyshow.booking.service;
 import com.bookmyshow.booking.models.request.BookingRequest;
 import com.bookmyshow.booking.repository.BookkingRepository;
 import com.bookmyshow.common.models.Booking;
-import com.bookmyshow.common.models.BookingStatus;
-import com.bookmyshow.common.models.SeatStatus;
+import com.bookmyshow.common.enums.BookingStatus;
 import com.bookmyshow.common.models.User;
 import com.bookmyshow.seat.service.SeatService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -36,7 +32,7 @@ public class BookingService {
         Map<String, Object> lockSeatsRequest = new HashMap<>();
         lockSeatsRequest.put("seatIds", bookingRequest.seatIds());
 
-        seatService.lockSeats(bookingRequest.seatIds());
+       // seatService.lockSeats(bookingRequest.seatIds());
         // Step 3: Create and persist the Booking entity with PENDING status
         String bookingId = UUID.randomUUID().toString();
         // Optional: Reference User entity if user exists

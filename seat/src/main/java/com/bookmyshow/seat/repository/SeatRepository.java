@@ -1,10 +1,8 @@
 package com.bookmyshow.seat.repository;
 
-import com.bookmyshow.common.models.Seat;
-import com.bookmyshow.common.models.SeatStatus;
-import jakarta.persistence.LockModeType;
+import com.bookmyshow.common.enums.SeatStatus;
+import com.bookmyshow.common.models.ShowSeat;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,17 +12,21 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface SeatRepository extends JpaRepository<Seat, String> {
+public interface SeatRepository extends JpaRepository<ShowSeat, String> {
 
     // Replace PESSIMISTIC locking to Redis
 //    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT s FROM Seat s WHERE s.seatId IN :ids")
-    List<Seat> findSeatsForBooking(@Param("ids") List<String> ids);
+    @Query("""
+    SELECT s FROM ShowSeat s
+    WHERE s.showId = :showId
+    AND s.seatId IN :seatIds
+""")
+    List<ShowSeat> findSeatsForBooking(@Param("seatIds") List<String> seatIds,@Param("showId") String showId);
 
 
     @Modifying
     @Query("""
-        UPDATE Seat s
+        UPDATE ShowSeat s
         SET s.status = :available,
             s.lockedAt = null,
             s.booking = null

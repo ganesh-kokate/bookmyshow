@@ -1,6 +1,6 @@
 package com.bookmyshow.seat.model.response;
 
-import com.bookmyshow.common.models.SeatStatus;
+import com.bookmyshow.common.enums.SeatStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;

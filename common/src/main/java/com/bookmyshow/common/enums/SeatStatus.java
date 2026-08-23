@@ -1,4 +1,4 @@
-package com.bookmyshow.common.models;
+package com.bookmyshow.common.enums;
 
 public enum SeatStatus {
     available,
