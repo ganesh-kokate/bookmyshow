@@ -1,5 +1,6 @@
 package com.bookmyshow.movie.exception;
 
+import com.bookmyshow.common.response.ErrorResponse;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,12 +14,12 @@ import java.time.LocalDateTime;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MovieNotFoundException.class)
-    public ResponseEntity<com.bookmyshow.common.response.ErrorResponse> handleMovieNotFound(
+    public ResponseEntity<ErrorResponse> handleMovieNotFound(
             MovieNotFoundException ex) {
 
         log.warn("Movie not found: {}", ex.getMessage());
 
-        com.bookmyshow.common.response.ErrorResponse errorResponse = com.bookmyshow.common.response.ErrorResponse.builder()
+        ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.NOT_FOUND.value())
                 .error(HttpStatus.NOT_FOUND.getReasonPhrase())
@@ -31,12 +32,12 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<com.bookmyshow.common.response.ErrorResponse> handleGenericException(
+    public ResponseEntity<ErrorResponse> handleGenericException(
             Exception ex) {
 
         log.error("Unexpected error occurred", ex);
 
-        com.bookmyshow.common.response.ErrorResponse errorResponse = com.bookmyshow.common.response.ErrorResponse.builder()
+        ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
