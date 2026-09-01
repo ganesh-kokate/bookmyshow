@@ -24,5 +24,6 @@
 		<module>seat</module>
 		<module>user</module>
 		<module>booking</module>
+		<module>movie</module>
 	</modules>
 </project>
