@@ -1,14 +1,16 @@
 package com.bookmyshow.seat.service;
 
 import com.bookmyshow.common.enums.SeatStatus;
+import com.bookmyshow.common.models.Booking;
 import com.bookmyshow.common.models.ShowSeat;
+import com.bookmyshow.common.repository.BookingRepository;
+import com.bookmyshow.common.repository.SeatRepository;
 import com.bookmyshow.seat.model.request.LockSeatsRequest;
 import com.bookmyshow.seat.model.response.ConfirmSeatResponse;
 import com.bookmyshow.seat.model.response.LockSeatsResponse;
-import com.bookmyshow.seat.repository.SeatRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-    import lombok.extern.log4j.Log4j2;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,86 +25,71 @@ public class SeatService {
 
     private final SeatRepository seatRepository;
     private final SeatLockService seatLockService;
+    private final BookingRepository bookingRepository;
    public List<Integer> getAvailableSeats()
    {
        return null;
    }
 
    @Transactional
-   public LockSeatsResponse lockSeats(LockSeatsRequest lockSeatsRequest)
-   {
-       List<ShowSeat> seats = seatRepository.findSeatsForBooking(lockSeatsRequest.getSeatIds(),lockSeatsRequest.getShowId());
-       LockSeatsResponse lockSeatsResponse = new LockSeatsResponse();
-       LocalDateTime lockedAt = LocalDateTime.now();
-       String lockToken = UUID.randomUUID().toString();
+   public LockSeatsResponse lockSeats(LockSeatsRequest lockSeatsRequest, String userId) {
+       String showId = lockSeatsRequest.getShowId();
+       List<String> seatIds = lockSeatsRequest.getSeatIds();
+       List<ShowSeat> seats = seatRepository.findSeatsForBooking(seatIds, showId);
+
+       for (ShowSeat seat : seats) {
+           if (seat.getStatus() == SeatStatus.booked) {
+               throw new RuntimeException("Seat already booked: " + seat.getSeatId());
+           }
+       }
        List<String> acquiredSeats = new ArrayList<>();
        try {
-           for (ShowSeat seat : seats) {
-               boolean locked = seatLockService.tryLock(seat.getSeatId(),lockSeatsRequest.getShowId(), lockToken);
-
+           for (String seatId : seatIds) {
+               boolean locked = seatLockService.tryLock(seatId, showId, userId);
                if (!locked) {
                    log.info("Seats {} is alredy Locked ", lockSeatsRequest.getSeatIds());
-                   throw new RuntimeException("Seat is currently locked: " + seat.getSeatId()
+                   throw new RuntimeException("Seat is currently locked: " + seatId
                    );
                }
-
-               if (seat.getStatus() == SeatStatus.booked) {
-                   throw new RuntimeException(
-                           "Seat already booked: " + seat.getSeatId()
-                   );
-               }
-
-               acquiredSeats.add(seat.getSeatId());
-              // seat.setStatus(SeatStatus.locked);
-               seat.setLockedAt(lockedAt);
-               seatRepository.save(seat);
-               bookSeats(lockSeatsRequest);
+               acquiredSeats.add(seatId);
            }
 
-           lockSeatsResponse.setSeatIds(lockSeatsRequest.getSeatIds());
-           //lockSeatsResponse.setStatus(SeatStatus.locked);
-           lockSeatsResponse.setLockedAt(lockedAt);
-           return lockSeatsResponse;
-       }
-       catch (RuntimeException ex)
-       {
+           LockSeatsResponse response = new LockSeatsResponse();
+           response.setSeatIds(seatIds);
+           response.setLockedAt(LocalDateTime.now());
+           return response;
+
+       } catch (RuntimeException ex) {
            for (String seatId : acquiredSeats) {
-               seatLockService.releaseLock(seatId,lockSeatsRequest.getShowId(), lockToken);
+               seatLockService.releaseLock(seatId, showId, userId);
            }
-
            throw ex;
        }
    }
 
-//    @Scheduled(fixedRate = 30000)
-//    @Transactional
-//    public void  releaseSeats()
-//    {
-//        LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(5);
-//        int released = seatRepository.releaseExpiredSeats(
-//                SeatStatus.locked,
-//                SeatStatus.available,
-//                expiryTime
-//        );
-//        log.info("Released Seats{}", released);
-//    }
 
-    public ConfirmSeatResponse bookSeats(LockSeatsRequest confirmRequest)
+
+    public ConfirmSeatResponse bookSeats(String bookingId)
     {
-        List<ShowSeat> seats = seatRepository.findSeatsForBooking(confirmRequest.getSeatIds(),confirmRequest.getShowId());
+        Booking booking = bookingRepository.findByIdWithSeats(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found: " + bookingId));
+
+        List<ShowSeat> seats = booking.getShowSeats();
         ConfirmSeatResponse confirmSeatResponse = new ConfirmSeatResponse();
         LocalDateTime bookedAt = LocalDateTime.now();
         for (ShowSeat seat : seats) {
 
-            if (seat.getStatus() == SeatStatus.booked) {
-                log.info("Seats {} is alredy Booked ", confirmRequest.getSeatIds());
-                throw new RuntimeException("Seat already booked: " + seat.getSeatId()
-                );
-            }
-
-            seat.setStatus(SeatStatus.booked);
-            seat.setLockedAt(bookedAt);
-            seatRepository.save(seat);
+          if(seatLockService.validateLock(seat.getSeatId(),seat.getShowId(),booking.getUser().getUserId()))
+          {
+              seat.setStatus(SeatStatus.booked);
+              seat.setLockedAt(bookedAt);
+              seatRepository.save(seat);
+          }
+          else{
+              log.info("seat is acquired by someone else .... Try another seat");
+              throw new RuntimeException("seat is acquired by someone else: " + seat.getSeatId()
+              );
+          }
         }
         List<String> seatIds = seats.stream()
                 .map(ShowSeat::getSeatId)
