@@ -27,13 +27,13 @@ public class SeatControler {
         return null;
     }
 
-    @PostMapping("/acquire-lock")
-    public LockSeatsResponse lockSeats( @RequestBody LockSeatsRequest lockSeatsRequest)
-    {
-
-        log.info("Acqiring lock on seat ids {}", lockSeatsRequest.getSeatIds());
-        return seatService.lockSeats(lockSeatsRequest);
-    }
+//    @PostMapping("/acquire-lock")
+//    public LockSeatsResponse lockSeats( @RequestBody LockSeatsRequest lockSeatsRequest)
+//    {
+//
+//        log.info("Acqiring lock on seat ids {}", lockSeatsRequest.getSeatIds());
+//        return seatService.lockSeats(lockSeatsRequest);
+//    }
 
 
 //    @PostMapping("/confirm-seats")

@@ -3,6 +3,7 @@ package com.bookmyshow.booking.controler;
 import com.bookmyshow.booking.models.request.BookingRequest;
 import com.bookmyshow.booking.models.request.ConfirmRequest;
 import com.bookmyshow.booking.service.BookingService;
+import com.bookmyshow.seat.model.response.ConfirmSeatResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,17 +22,16 @@ public class BookingController {
        return bookingservice.createBooking(bookingRequest);
     }
 
-    @PostMapping("/cofirm")
-    public String confirm(@RequestBody ConfirmRequest confirmRequest)
+    @PostMapping("/cofirm/{bookingId}")
+    public ConfirmSeatResponse confirm(@PathVariable String bookingId)
     {
-        bookingservice.confirmBooking();
-        return null;
+        return bookingservice.confirmBooking(bookingId);
     }
 
-    @PostMapping("/cancel")
+    @PostMapping("/cancel/{bookingId}")
     public void cancle(@PathVariable String bookingId)
     {
-        bookingservice.cancelBooking();
+        bookingservice.cancelBooking(bookingId);
     }
 
 
