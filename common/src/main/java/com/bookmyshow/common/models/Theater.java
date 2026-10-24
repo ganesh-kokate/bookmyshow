@@ -1,6 +1,7 @@
 package com.bookmyshow.common.models;
 
 import com.bookmyshow.common.enums.TheaterStatus;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,6 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Theater {
 
     @Id

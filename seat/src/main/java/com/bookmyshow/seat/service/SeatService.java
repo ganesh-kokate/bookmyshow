@@ -1,6 +1,7 @@
 package com.bookmyshow.seat.service;
 
 import com.bookmyshow.common.enums.SeatStatus;
+import com.bookmyshow.common.models.AvailableSeats;
 import com.bookmyshow.common.models.Booking;
 import com.bookmyshow.common.models.ShowSeat;
 import com.bookmyshow.common.repository.BookingRepository;

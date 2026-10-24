@@ -2,6 +2,7 @@ package com.bookmyshow.common.models;
 
 import com.bookmyshow.common.enums.ScreenStatus;
 import com.bookmyshow.common.id.ScreenId;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,6 +14,7 @@ import lombok.*;
 @Getter
 @Setter
 @Table(name = "screen")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Screen {
 
     @Id
