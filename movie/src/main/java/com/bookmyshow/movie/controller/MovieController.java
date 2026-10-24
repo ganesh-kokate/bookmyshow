@@ -1,13 +1,17 @@
 package com.bookmyshow.movie.controller;
 
+import com.bookmyshow.common.models.AllTheatorsMovie;
 import com.bookmyshow.common.models.Movie;
 import com.bookmyshow.common.response.ApiResponse;
+import com.bookmyshow.movie.CreateMovieRequest;
 import com.bookmyshow.movie.service.MovieService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -20,13 +24,18 @@ public class MovieController {
     private final MovieService movieService;
 
     // Create
-    @PostMapping("/addMovie")
+    @PostMapping(
+            value ="/addMovie",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
     public ResponseEntity<ApiResponse<Movie>> createMovie(
-            @RequestBody Movie movie) {
+            @RequestPart("movie") CreateMovieRequest movieRequest,
+            @RequestPart(value = "poster", required = false) MultipartFile poster
+    ) throws java.io.IOException {
 
-        log.info("Received request to create movie: {}", movie.getTitle());
+        log.info("Received request to create movie: {}", movieRequest.getTitle());
+        Movie createdMovie = movieService.createMovie(movieRequest, poster);
 
-        Movie createdMovie = movieService.createMovie(movie);
 
         ApiResponse<Movie> response = ApiResponse.<Movie>builder()
                 .success(true)
@@ -113,4 +122,13 @@ public class MovieController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/get/{movieName}")
+    public List<AllTheatorsMovie> getMovieByName(
+            @PathVariable("movieName") String movieName) {
+
+       return movieService.getMovieByName(movieName);
+    }
+
+
 }

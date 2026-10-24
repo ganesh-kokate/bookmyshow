@@ -1,6 +1,8 @@
 package com.bookmyshow.common.repository;
 
 import com.bookmyshow.common.enums.SeatStatus;
+import com.bookmyshow.common.models.AvailableSeatResponceForScreen;
+import com.bookmyshow.common.models.AvailableSeats;
 import com.bookmyshow.common.models.ShowSeat;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -35,4 +37,20 @@ public interface SeatRepository extends JpaRepository<ShowSeat, String> {
             @Param("available") SeatStatus available,
             @Param("expiryTime") LocalDateTime expiryTime
     );
+
+    @Query("""
+    SELECT new com.bookmyshow.common.models.AvailableSeatResponceForScreen(
+        s.seatId,
+        s.status,
+        s.price
+    )
+    FROM ShowSeat s
+    WHERE s.showId = :showId
+""")
+    List<AvailableSeatResponceForScreen> findSeatsByScreen(
+            @Param("showId") String showId
+    );
+
+
+
 }

@@ -91,5 +91,11 @@ public class BookingService {
         return bookingId;
     }
 
+    public AvailableSeats getAvailableSeatByScreen(String showId)
+    {
+        List<AvailableSeatResponceForScreen> seats = seatRepository.findSeatsByScreen(showId);
+        return new AvailableSeats(showId, seats);
+    }
+
 
 }
