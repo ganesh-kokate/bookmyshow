@@ -31,7 +31,7 @@ public class ShowSeat {
     private SeatStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "locked_by")
+    @JoinColumn(name = "booking_id")
     private Booking booking;
 
     @Column(name = "locked_at")

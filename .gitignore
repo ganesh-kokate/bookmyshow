@@ -31,3 +31,16 @@ build/
 
 ### VS Code ###
 .vscode/
+
+@"
+
+# Java crash logs
+hs_err_pid*.log
+replay_pid*.log
+
+# Build output
+target/
+node_modules/
+dist/
+.angular/
+"@ | Add-Content .gitignore
