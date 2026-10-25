@@ -10,10 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +22,7 @@ public class ShowService {
     private final SeatRepository seatRepository;
     private final ScreenRepository screenRepository;
     private final PhysicalSeatRepository physicalSeatRepository;
+    private record SeatPosition(char row, int column) {}
 
         public Shows creatShow(AddShowRequest request)
         {
@@ -68,6 +66,7 @@ public class ShowService {
 
         String showId = request.showId();
 
+        // Validate every range before inserting seats
         for (Map.Entry<SeatType, SeatRange> entry : request.seats().entrySet()) {
 
             SeatType seatType = entry.getKey();
@@ -85,8 +84,12 @@ public class ShowService {
 
     private boolean isSeatRangeAvailable(SeatRange seatRange) {
 
-        int requestedFrom = getSeatNumber(seatRange.getFromSeat());
-        int requestedTo = getSeatNumber(seatRange.getToSeat());
+        SeatPosition requestedFrom = getSeatPosition(seatRange.getFromSeat());
+        SeatPosition requestedTo = getSeatPosition(seatRange.getToSeat());
+
+        if (SEAT_COMPARATOR.compare(requestedFrom, requestedTo) > 0) {
+            return false;
+        }
 
         // TODO: Later these will come from SecurityContext.
         String theaterId = "TH001";
@@ -95,38 +98,56 @@ public class ShowService {
         String dbSeatFrom = physicalSeatRepository.findDbSeatFrom(theaterId,screenName);
         String dbSeatTo = physicalSeatRepository.findDbSeatTo(theaterId,screenName);
 
-        int dbFrom = getSeatNumber(dbSeatFrom);
-        int dbTo = getSeatNumber(dbSeatTo);
+        SeatPosition dbFrom = getSeatPosition(dbSeatFrom);
+        SeatPosition dbTo = getSeatPosition(dbSeatTo);
 
-        return requestedFrom >= dbFrom
-                && requestedTo <= dbTo;
+
+        return SEAT_COMPARATOR.compare(requestedFrom, dbFrom) >= 0
+                && SEAT_COMPARATOR.compare(requestedTo, dbTo) <= 0;
     }
 
-    private int getSeatNumber(String seatId) {
-        return Integer.parseInt(seatId.substring(6));
+
+    private SeatPosition getSeatPosition(String seatId) {
+
+        char row = seatId.charAt(0);
+
+        int column = Integer.parseInt(seatId.substring(1));
+
+        return new SeatPosition(row, column);
     }
+
 
     private void allotSeats(
             String showId,
             SeatType seatType,
             SeatRange seatRange) {
 
-        int from = getSeatNumber(seatRange.getFromSeat());
-        int to = getSeatNumber(seatRange.getToSeat());
+        SeatPosition from = getSeatPosition(seatRange.getFromSeat());
+        SeatPosition to = getSeatPosition(seatRange.getToSeat());
+        BigDecimal price = seatRange.getPrice();
 
-
+        System.out.println(seatRange.getPrice());
         List<ShowSeat> showSeats = new ArrayList<>();
 
-        for (int i = from; i <= to; i++) {
+        for (char row = from.row(); row <= to.row(); row++) {
 
-            ShowSeat showSeat = new ShowSeat();
+            int startColumn =  (row == from.row()) ? from.column() : 1;
+            int endColumn =    (row == to.row()) ? to.column() : 10;
 
-            showSeat.setShowId(showId);
-            showSeat.setSeatId("seatId" + i);
-            showSeat.setStatus(SeatStatus.available);
-            showSeat.setPrice(BigDecimal.valueOf(200));
+            for (int column = startColumn; column <= endColumn; column++)
+            {
 
-            showSeats.add(showSeat);
+                String seatId = row + String.valueOf(column);
+
+                ShowSeat showSeat = new ShowSeat();
+
+                showSeat.setShowId(showId);
+                showSeat.setSeatId(seatId);
+                showSeat.setStatus(SeatStatus.available);
+                showSeat.setPrice(price);
+
+                showSeats.add(showSeat);
+            }
         }
 
         seatRepository.saveAll(showSeats);
@@ -164,4 +185,10 @@ public class ShowService {
         }
         return new ArrayList<>(theaterMap.values());
     }
+
+    private static final Comparator<SeatPosition> SEAT_COMPARATOR =
+            Comparator.
+                    comparingInt((SeatPosition s) -> s.row())
+                    .thenComparingInt(SeatPosition::column);
+
 }
