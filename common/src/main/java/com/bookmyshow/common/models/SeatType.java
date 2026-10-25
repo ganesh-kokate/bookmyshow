@@ -4,5 +4,7 @@ import lombok.Data;
 
 
 public enum SeatType {
-    Regular
+    Regular,
+    Premium,
+    Recliner
 }
